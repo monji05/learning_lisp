@@ -154,3 +154,28 @@
 )
 
 (describe-objects 'living-room *objects* *object-locations*)
+
+
+(defparameter *location* 'living-room)
+
+
+(defun look ()
+  (append (describe-location *location* *nodes*)
+          (describe-paths *location* *edges*)
+          (describe-objects *location* *objects* *object-locations*)
+  )
+)
+
+(defun walk (derection)
+  (let ((next (find direction
+                    (cdr (assoc *location* *edges*))
+                    :key #'cadr
+                    )
+        ))
+  )
+  (if next
+      (progn (self *location* *edges*))
+              (look))
+  '(you cannot go that way.
+  )
+)
