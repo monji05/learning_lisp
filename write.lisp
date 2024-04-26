@@ -159,8 +159,7 @@
 (defparameter *location* 'living-room)
 
 
-(defun look ()
-  (append (describe-location *location* *nodes*)
+(defun look () (append (describe-location *location* *nodes*)
           (describe-paths *location* *edges*)
           (describe-objects *location* *objects* *object-locations*)
   )
@@ -178,4 +177,13 @@
               (look))
   '(you cannot go that way.
   )
+)
+
+(defun pickup (object)
+  (cond ((member object
+          (objects-at *location* *objects* *object-locations*))
+         (push (list object 'body) *object-locations*)
+         `(you are now carrying the ,object))
+        (t '(you cannot get that.))
+        )
 )
