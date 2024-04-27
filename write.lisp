@@ -73,6 +73,7 @@
 (assoc 'garden *nodes*)
 
 
+;;; assocで alistから第一引数のキーに該当する値を返す
 (defun describe-location (location nodes)
   (cadr (assoc location nodes))
 
@@ -81,6 +82,14 @@
 (describe-location 'living-room *nodes*)
 
 
+;;; phpでいうとこんな感じ？
+;;; array (
+;;;  "living-room" => array (
+;;;  [0] => "garden",
+;;; [1] => "upstairs",
+;;; [2] => "ladder"
+;;;  )
+;;; )
 (defparameter *edges* '((living-room (garden west door)
                                      (attic upstairs ladder))
                                      (garden (living-room east door))
@@ -88,8 +97,13 @@
                                      )
 )
 
+;;; 準クォートの仕組み
+;;; これまでコードモードからデータモードの切替に使っていたシングルクォートの代わりにバッククォートを使う
+;;; シングルクォートもバッククォートも、Lispではコードの一部をデータモードに切り替えられる
+;;; 違いはバッククォートの場合その中でコンマを使うことで一部分だけコードモードに戻せる（要は変数展開のようなもの）
+;;; これをアンクォートという
 (defun describe-path (edge)
-   '(there is a ,(caddr edge) going ,(cadr edge) from here.))
+   `(there is a ,(caddr edge) going ,(cadr edge) from here.))
 
 (describe-path '(garden west door))
 
@@ -133,6 +147,11 @@
 
 ;;; 関数がnilか真の値を返す場合、その関数の最後にpをつける習わしがある
 ;;; 真偽値を確かめる関数は述語(predicate)と呼ばれるのでそれが由来
+;;; labelsコマンドでローカル関数at-loc-pを定義
+;;; at-loc-p関数はオブジェクトの名前を表すシンボルを取り、それが場所locにあるかどうかをtかnilで返す
+;;; assocはalist(association list または縮めてalist)からキーと値のペアを返す
+;;; その仕組はまずオブジェクトをobj-locs alistから探し次にeqを使って現在の場所とオブジェクトの場所が一致するかどうかみる
+;;; 最後の行にあるremove-if-not関数は渡されたリストの各要素に第一引数の関数(ここではat-loc-p)を適用しそれが真の値を返さなかったものを除いたリストを得るもの phpでいうarray_filter()みたいなものか
 (defun objects-at (loc objs obj-locs)
   (labels ((at-loc-p (obj)
              (eq (cadr (assoc obj obj-locs)) loc)))
@@ -141,10 +160,15 @@
   )
 )
 
+;;; 同じ結果が返る、もしかして一緒？なわけないか、エラーになったことあったし
+(objects-at `living-room *objects* *object-locations*)
 (objects-at 'living-room *objects* *object-locations*)
 
 
 ;;; シンボルは`で、データモードは'ややこしい
+;;; describe-objを定義して、「与えられたオブジェクトが床にある」という文を準クォートを使って作り出す
+;;; そして関数の本体では現在の場所にあるオブジェクトをobjects-at関数使って見つけ、そのオブジェクトのリストに対してdescribe-objをマップして
+;;; 最後にappendですべての描写をつなげて一つのリストにしている
 (defun describe-objects (loc objs obj-loc)
   (labels ((describe-obj (obj)
              `(you see a ,obj on the floor.)
