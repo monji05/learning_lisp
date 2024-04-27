@@ -114,6 +114,8 @@
 ;;; location current user's position
 ;;; edges game map's edges
 ;;; cdr means array_values in php
+;;;
+;;; mapcarはそれぞれのリストの最初の要素を取り出しリストにして返している
 (defun describe-paths (location edges)
   (apply #'append (mapcar #'describe-path (cdr (assoc location edges))))
 )
