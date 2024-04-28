@@ -239,3 +239,27 @@
 ; Lispの関数には他の関数を非キスとして受け取るものがあるこれらは高階関数と呼ばれる
 ; mapcarはcommon Lispで最もよく使われる高階関数である
 ; alist中の値を置き換えたければ、新しい要素をリストにpushするだけでいい、assocは最も新しい値だけを返すからだ
+
+
+; 6.1 テキストの表示と読み込み
+(progn (print "this")
+       (print "is")
+       (print "a")
+       (print "test")
+       )
+
+; prin1は改行せずに引数を表示する
+; printは値を表示したあとに空白を表示する
+(progn (prin1 "this")
+       (prin1 "is")
+       (prin1 "a")
+       (prin1 "test")
+       )
+
+(defun say-hello ()
+    (print "Please type your name:")
+    (let ((name (read)))
+        (print "Nice to meet you, ")
+        (print name)
+    )
+)
