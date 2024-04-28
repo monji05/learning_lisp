@@ -221,3 +221,11 @@
         (t '(you cannot get that.))
         )
 )
+
+; プレイヤーが現在もっている物を見られる関数
+; objects-atを使ってある場所に存在するオブジェクトのリストを取ってきている
+; オブジェクトをプレーヤーが手に取ったときそのオブジェクトの場所を'bodyにしたことを思い出そう
+; そこが、この関数で探すべき場所である
+(defun inventory ()
+  (cons 'items (objects-at 'body *objects* *object-locations*))
+)
