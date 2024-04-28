@@ -191,20 +191,28 @@
   )
 )
 
-(defun walk (derection)
+; 見つけた通り道をまず変数nextに格納し, if式によってnextが値を持っているかどうか（nextがnilでないかどうか）を検査する
+; nextが値を持っていれば渡された方向は有効なものだったということだから,プレイヤーの現在地を更新する
+; lookの呼び出しは更新された場所の描写を作り出し、それが結果の値として返される
+; プレイヤーが無効な通り道を指定した場合はwalkは場所の描写をせずにそちらには進めないというメッセージを返す
+(defun walk (direction)
   (let ((next (find direction
                     (cdr (assoc *location* *edges*))
-                    :key #'cadr
-                    )
+                    :key #'cadr)
         ))
-  )
-  (if next
-      (progn (self *location* *edges*))
-              (look))
-  '(you cannot go that way.
+    (if next
+        (progn (setf *location* (car next))
+                (look))
+        '(you cannot go that way.)
+    )
   )
 )
 
+; pickupはmember関数を使ってオブジェクトが確かに現在地の床にあるかを確かめる(member関数はリストの中に要素があるかどうかを検査するのに使える)
+; 現在地にあるオブジェクトのリストを得るのにobject−atを使っている
+; オブジェクトが現在地にあれば、pushコマンドを使ってオブジェクトと新しい場所からなるリストをobject-locationsに付け足す
+; 新しい場所とはプレーヤーの体を表すbody
+; pushコマンドはsetfコマンドを使って作られた簡易関数である
 (defun pickup (object)
   (cond ((member object
           (objects-at *location* *objects* *object-locations*))
