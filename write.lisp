@@ -257,9 +257,26 @@
        )
 
 (defun say-hello ()
-    (print "Please type your name:")
-    (let ((name (read)))
-        (print "Nice to meet you, ")
-        (print name)
+    (princ "Please type your name:")
+    (let ((name (read-line)))
+        (princ "Nice to meet you, ")
+        (princ name)
     )
+)
+
+; Lispにおけるコードとデータの対称性
+; プログラムコードとデータを同じデータ構造を使って扱うプログラミング言語は同図像性と呼ばれる(コードモードとデータモードのこと)
+; 変数 *foo*に格納されているコードをどうやったら実行できるだろうか、そこで出てくるのがevalコマンドである
+; ただし、evalは初心者のうちは使わないこと
+(defparameter *foo* (+ 1 2))
+
+; 6.3 ´ゲームエンジンに´専用のインタフェースを追加する
+; ´専用のREPLの準備
+(defun game-repl ()
+  (let ((cmd (game-read))
+        (unless (eq (car cmd) 'quit)
+          (game-print (game-eval cmd))
+          (game-repl)
+        ))
+  )
 )
