@@ -270,13 +270,54 @@
 ; ただし、evalは初心者のうちは使わないこと
 (defparameter *foo* (+ 1 2))
 
-; 6.3 ´ゲームエンジンに´専用のインタフェースを追加する
+; 6.3 ゲームエンジンに専用のインタフェースを追加する
 ; ´専用のREPLの準備
+; このバージョンではプレーヤーがタイプした内容をまずローカル変数cmdに保存する
+;こうすることで、quitへの呼び出しを検出してgame-replを抜け出すことができる
+;逆に言えば、ユーザーがquitをタイプするまではgame-replを繰り返すということ
+; quitがタイプされていなければ、入力をevalして結果をprintするのだが、どちらもこれから定義する
 (defun game-repl ()
   (let ((cmd (game-read))
         (unless (eq (car cmd) 'quit)
           (game-print (game-eval cmd))
           (game-repl)
         ))
+  )
+)
+;専用のread関数を書く
+;また、ゲームのインターフェースにするのに不都合な点を2点解決する
+; 1. 標準のLispのread関数では、コマンドを呼び出すにはそれをカッコの中に入れなければいけない
+; 2. readではコマンドとして使っている関数の引数をクォートしなければならない
+;それらを解決する関数
+
+;read-from-stringコマンドはreadと同じようにLisp構文で書かれた式やLispの基本型のデータを読み込むが、コンソールからではなく、文字列から読み込むという点が異なる
+;read-from-stringの入力とする文字列は、read-lineで得たものにちょっと加工したデータ
+;concatenateで文字列を結合
+;次にプレーヤーがコマンドに渡した引数をクォートするための、ローカル関数quote-itを定義している
+;シングルクォートはLispのコマンドquoteの略記
+;'foo = (quote foo)なので、引数それぞれをquoteから始まるリストに入れてやれば、クォートできることになる
+;ローカル関数はlabelsだけじゃなく、fletでも定義できることを思い出そう
+;quote-it関数は再起する必要がないので、ここではfletをつかっている
+;game-read関数の最後の行ではquote-itをプレーヤーの入力したコマンドのすべての引数に適用するためにcmdのcdrにquote-itをマップした
+;そしてcarを使って取り出したコマンドの最初の単語をそのまま最初にくっつけ直している
+(defun game-read()
+  (let ((cmd (read-from-string
+              (concatenate 'string "(" (read-line) ")"))))
+    (flet ((quote-it (x)
+            (list 'quote x)))
+            (cons (car cmd) (mapcar #'quote-it (cdr cmd)))
+    )
+  )
+)
+
+;game-eval関数を書く
+;evalコマンドの改善を考える
+;game-evalコマンドではあらかじめ決めたコマンドだけを呼べるようにする
+(defparameter *allowed-commands* '(look walk pickup inventory))
+
+(defun game-eval (sexp)
+  (if (member (car sexp) *allowed-commands*)
+    (eval sexp)
+    '(i do not know that command.)
   )
 )
