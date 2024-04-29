@@ -315,9 +315,49 @@
 ;game-evalコマンドではあらかじめ決めたコマンドだけを呼べるようにする
 (defparameter *allowed-commands* '(look walk pickup inventory))
 
+;game-eval関数は、入力されたコマンドの最初の単語が許可されたコマンドのリストにあるかどうかをmember関数をチェックする
+;もしあれば標準のevalを使ってプレーヤーの入力したコマンドを実行する
+;プレーヤーがこちらの設定したリストにあるコマンドだけを呼べるようにすることで、悪意あるコマンドを呼び出そうとすることを防げる
 (defun game-eval (sexp)
   (if (member (car sexp) *allowed-commands*)
     (eval sexp)
     '(i do not know that command.)
   )
+)
+
+;game-print関数を書く
+;game-replに必要な最後の部品はgame-print関数である
+;Lispの生のREPLで不便な点のうち、最も目につく点はすべてのテキストが大文字で表示されてしまうこと
+;この問題を解決する
+; 標準のprintコマンドは、出力の前に改行しあとにスペースを表示するもの
+; t,nilがtweak-textの引数に渡される
+; tweak-textでは関数の戦闘でまず入力のリストの先頭を一つとってそれをローカル変数itemに残りをローカル変数restに入れておく
+; 最初の(eql item #\space)の条件は文字が空白かどうか,もしそうなら空白をそのままにしてリストの次の文字へと進む
+; もしもじがピリオド、クエスチョンマーク、あるいはエクスクラメーションマークなら、capパラメータをonにしてリストの残りを処理する（再帰呼び出しでcap引数にtを渡す）
+(defun tweak-text (ls caps lit)
+  (when lst
+    (let ((item (car lst))
+          (rest (cdr lst)))
+      (cond ((eql item #\space) (cons item (tweak-text rest caps lit)))
+            ((member item '(#\! #\? #\.)) (cons item (twek-text rest t lit)))
+            ((eql item #\") (tweak-text rest caps (not lit)))
+            (lit (cons item (tweak-text rest nil lit)))
+            (caps (cons (char-upcase item) (tweak-text rest nil lit)))
+            (t (cons (char-downcase item) (tweak-text rest nil nil)))
+      )
+    )
+  )
+)
+
+; game-printの中で最初に実行される重要な部分は、シンボルのリスト（適切な表示へと変換したい,テキストの内部表現）をprin1-to-string関数を使って文字列に変換するコード
+(defun game-print (lst)
+  (princ (coerce (tweak-text (coerce (string-trim "() "
+                                      (prin1-to-string lst)
+                                      )
+                              'list)
+                    t
+                    nil)
+        'string)
+  )
+  (fresh-line)
 )
