@@ -350,6 +350,7 @@
 )
 
 ; game-printの中で最初に実行される重要な部分は、シンボルのリスト（適切な表示へと変換したい,テキストの内部表現）をprin1-to-string関数を使って文字列に変換するコード
+; tweak-textが次に調べるのは、現在の文字を大文字にすべきかどうかということだ
 (defun game-print (lst)
   (princ (coerce (tweak-text (coerce (string-trim "() "
                                       (prin1-to-string lst)
