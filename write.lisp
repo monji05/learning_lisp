@@ -202,7 +202,7 @@
         ))
     (if next
         (progn (setf *location* (car next))
-                (look))
+            (look))
         '(you cannot go that way.)
     )
   )
