@@ -277,12 +277,11 @@
 ;逆に言えば、ユーザーがquitをタイプするまではgame-replを繰り返すということ
 ; quitがタイプされていなければ、入力をevalして結果をprintするのだが、どちらもこれから定義する
 (defun game-repl ()
-  (let ((cmd (game-read))
-        (unless (eq (car cmd) 'quit)
-          (game-print (game-eval cmd))
-          (game-repl)
-        ))
-  )
+  (let ((cmd (game-read)))
+    (unless (eq (car cmd) 'quit)
+        (game-print (game-eval cmd))
+        (game-repl)
+    ))
 )
 ;専用のread関数を書く
 ;また、ゲームのインターフェースにするのに不都合な点を2点解決する
@@ -334,12 +333,12 @@
 ; tweak-textでは関数の戦闘でまず入力のリストの先頭を一つとってそれをローカル変数itemに残りをローカル変数restに入れておく
 ; 最初の(eql item #\space)の条件は文字が空白かどうか,もしそうなら空白をそのままにしてリストの次の文字へと進む
 ; もしもじがピリオド、クエスチョンマーク、あるいはエクスクラメーションマークなら、capパラメータをonにしてリストの残りを処理する（再帰呼び出しでcap引数にtを渡す）
-(defun tweak-text (ls caps lit)
+(defun tweak-text (lst caps lit)
   (when lst
     (let ((item (car lst))
           (rest (cdr lst)))
       (cond ((eql item #\space) (cons item (tweak-text rest caps lit)))
-            ((member item '(#\! #\? #\.)) (cons item (twek-text rest t lit)))
+            ((member item '(#\! #\? #\.)) (cons item (tweak-text rest t lit)))
             ((eql item #\") (tweak-text rest caps (not lit)))
             (lit (cons item (tweak-text rest nil lit)))
             (caps (cons (char-upcase item) (tweak-text rest nil lit)))
@@ -362,3 +361,5 @@
   )
   (fresh-line)
 )
+
+(game-print '(not only does this sentence have a "comma," it also mentions the "iPad."))
